@@ -224,4 +224,4 @@ The merit order model was validated against Darlington refurbishment windows whe
 
 ---
 
-*Data sourced from [IESO](https://www.ieso.ca/power-data/data-directory). Analysis covers 2015–2025.*
+*Data sourc
