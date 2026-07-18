@@ -1,0 +1,7 @@
+fuel,co2_factor_gco2_per_kwh,is_nuclear,is_renewable,included_in_counterfactual
+NUCLEAR,12,true,false,false
+HYDRO,24,false,true,true
+GAS,490,false,false,true
+WIND,11,false,true,false
+SOLAR,45,false,true,false
+BIOFUEL,230,false,false,false
