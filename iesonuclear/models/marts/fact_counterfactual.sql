@@ -65,6 +65,9 @@ SELECT
   , nuclear_mw
   , gas_mw
   , hydro_mw
+  , wind_mw
+  , solar_mw
+  , biofuel_mw
   , total_mw
   , ontario_demand_mw
   , hoep AS actual_price
