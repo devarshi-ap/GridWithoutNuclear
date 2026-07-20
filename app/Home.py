@@ -73,10 +73,9 @@ def load_data():
     df["year"] = df["datetime"].dt.year
     df["month"] = df["datetime"].dt.month
     df["hour"] = df["datetime"].dt.hour
-    return df
+    return df[df["year"].between(2015, 2024)] # filter rows where Year is between 2015-2025
 
-df = load_data()
-df_full = df[df["year"].between(2015, 2025)] # filter rows where Year is between 2015-2025
+df_full = load_data()
 
 # group by Year then perform Named Aggregations on each Year
 annual = df_full.groupby("year").agg(
