@@ -2,14 +2,14 @@ WITH base AS (
   SELECT
     *
   FROM
-    {{ ref('fact_grid_demand') }}
+    { { ref('fact_grid_demand') } }
 )
 , hydro_caps AS (
   SELECT
     month
     , hydro_seasonal_max_mw
   FROM
-    {{ ref('hydro_seasonal_capacity') }}
+    { { ref('hydro_seasonal_capacity') } }
 )
 , filled AS (
   SELECT
@@ -80,36 +80,36 @@ SELECT
   , -- Counterfactual price (base scenario: gas marginal cost = $95/MWh)
     ROUND(
     (
-      hoep + (gas_fill_mw::numeric / NULLIF(ontario_demand_mw, 0)) * (95 - hoep)
-    )::numeric
+      hoep + (gas_fill_mw: :numeric / NULLIF(ontario_demand_mw, 0)) * (95 - hoep)
+    ): :numeric
     , 4
   ) AS counterfactual_price
   , -- Counterfactual price low scenario ($70/MWh gas)
     ROUND(
     (
-      hoep + (gas_fill_mw::numeric / NULLIF(ontario_demand_mw, 0)) * (70 - hoep)
-    )::numeric
+      hoep + (gas_fill_mw: :numeric / NULLIF(ontario_demand_mw, 0)) * (70 - hoep)
+    ): :numeric
     , 4
   ) AS counterfactual_price_low
   , -- Counterfactual price high scenario ($120/MWh gas)
     ROUND(
     (
-      hoep + (gas_fill_mw::numeric / NULLIF(ontario_demand_mw, 0)) * (120 - hoep)
-    )::numeric
+      hoep + (gas_fill_mw: :numeric / NULLIF(ontario_demand_mw, 0)) * (120 - hoep)
+    ): :numeric
     , 4
   ) AS counterfactual_price_high
   , -- Price delta (base)
     ROUND(
     (
-      (gas_fill_mw::numeric / NULLIF(ontario_demand_mw, 0)) * (95 - hoep)
-    )::numeric
+      (gas_fill_mw: :numeric / NULLIF(ontario_demand_mw, 0)) * (95 - hoep)
+    ): :numeric
     , 4
   ) AS price_delta
   , -- Cost delta per hour in dollars (base)
     ROUND(
     (
-      (gas_fill_mw::numeric / NULLIF(ontario_demand_mw, 0)) * (95 - hoep) * ontario_demand_mw
-    )::numeric
+      (gas_fill_mw: :numeric / NULLIF(ontario_demand_mw, 0)) * (95 - hoep) * ontario_demand_mw
+    ): :numeric
     , 2
   ) AS cost_delta_dollars
   , -- CO2 avoided in kg
