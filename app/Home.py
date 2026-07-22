@@ -170,9 +170,8 @@ with k3:
 st.divider()
 
 
-# col_left (Chart 1), col_right (Chart 2)
-col_left, col_right = st.columns(2, border=True)
 
+col_left, col_right = st.columns(2, border=True)
 # ── Chart 1a — Monthly price with uncertainty band ───────────────────────────
 with col_left:
     st.subheader("Actual vs Counterfactual Price")
@@ -209,7 +208,7 @@ with col_left:
         hovermode="x unified",
         height=380
     )
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width='stretch')
 
 st.divider()
 
@@ -242,7 +241,7 @@ with col_right:
         showlegend=False,
         height=380
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width='stretch')
 
 st.divider()
 
@@ -256,6 +255,8 @@ st.subheader(f"Consumer Savings Without Nuclear ({currency})")
 st.caption("Left axis: annual savings · Right axis: cumulative total · "
     + ("Inflation-adjusted using Bank of Canada CPI." if inflation_adj else "Nominal dollars — toggle inflation adjustment in sidebar for real values.")
 )
+
+
 
 fig3 = make_subplots(specs=[[{"secondary_y": True}]])
 
@@ -284,7 +285,7 @@ fig3.update_layout(
     height=380,
     barmode="group"
 )
-st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig3, width='stretch')
 
 st.caption(
     "⚠️ Economic value is likely understated — excludes grid stability, "
