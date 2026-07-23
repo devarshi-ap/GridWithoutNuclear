@@ -177,4 +177,147 @@ with tab_hour:
             stackgroup="one",
             line=dict(color=COLORS[fuel], width=0.5),
             fillcolor=COLORS[fuel],
-            hov
+            hovertemplate=f"{fuel.capitalize()}: %{{y:,.0f}} MW<extra></extra>"
+        ))
+    fig_hour.update_layout(
+        xaxis=dict(title="Hour of day", tickmode="linear", tick0=0, dtick=2),
+        yaxis_title="Average MW",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        margin=dict(l=0, r=0, t=40, b=0),
+        hovermode="x unified",
+        height=380
+    )
+    st.plotly_chart(fig_hour, use_container_width=True)
+
+with tab_month:
+    st.caption(
+        "Average MW output per fuel type by month. "
+        "Solar peaks in summer, wind in winter/spring. "
+        "Nuclear stays flat — seasonal variation is minimal."
+    )
+    fig_month = go.Figure()
+    for fuel in FUEL_ORDER:
+        fig_month.add_trace(go.Scatter(
+            x=MONTH_NAMES,
+            y=monthly_mix[fuel],
+            name=fuel.capitalize(),
+            stackgroup="one",
+            line=dict(color=COLORS[fuel], width=0.5),
+            fillcolor=COLORS[fuel],
+            hovertemplate=f"{fuel.capitalize()}: %{{y:,.0f}} MW<extra></extra>"
+        ))
+    fig_month.update_layout(
+        xaxis_title="Month",
+        yaxis_title="Average MW",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        margin=dict(l=0, r=0, t=40, b=0),
+        hovermode="x unified",
+        height=380
+    )
+    st.plotly_chart(fig_month, use_container_width=True)
+
+st.divider()
+
+
+# ── Chart 2c: Price distribution by hour ────────────────────────────────────
+st.subheader("Electricity Price Distribution by Hour of Day")
+st.caption(
+    "Median, IQR (25th–75th percentile), and 10th–90th percentile range. "
+    "Wide bands = high price volatility. Nuclear's baseload output suppresses "
+    "overnight volatility — the narrow overnight band is nuclear working."
+)
+
+hourly_price = build_hourly_price(df)
+hours = hourly_price["hour"].tolist()
+
+fig_price = go.Figure()
+
+# 10th–90th band
+fig_price.add_trace(go.Scatter(
+    x=hours + hours[::-1],
+    y=hourly_price["q90"].tolist() + hourly_price["q10"].tolist()[::-1],
+    fill="toself",
+    fillcolor="rgba(33,150,243,0.08)",
+    line=dict(color="rgba(0,0,0,0)"),
+    name="10th–90th percentile",
+    hoverinfo="skip"
+))
+
+# 25th–75th IQR band
+fig_price.add_trace(go.Scatter(
+    x=hours + hours[::-1],
+    y=hourly_price["q75"].tolist() + hourly_price["q25"].tolist()[::-1],
+    fill="toself",
+    fillcolor="rgba(33,150,243,0.18)",
+    line=dict(color="rgba(0,0,0,0)"),
+    name="IQR (25th–75th percentile)",
+    hoverinfo="skip"
+))
+
+# Median
+fig_price.add_trace(go.Scatter(
+    x=hours,
+    y=hourly_price["median"],
+    line=dict(color=COLORS["nuclear"], width=2.5),
+    name="Median price",
+    mode="lines",
+    hovertemplate="Median: $%{y:.2f}/MWh<extra></extra>"
+))
+
+# Mean
+fig_price.add_trace(go.Scatter(
+    x=hours,
+    y=hourly_price["mean"],
+    line=dict(color=COLORS["gas"], width=2, dash="dash"),
+    name="Mean price",
+    mode="lines",
+    hovertemplate="Mean: $%{y:.2f}/MWh<extra></extra>"
+))
+
+# Annotate peak hours
+for peak_hour, label in [(8, "Morning peak"), (18, "Evening peak")]:
+    fig_price.add_vline(
+        x=peak_hour,
+        line_dash="dot",
+        line_color="gray",
+        line_width=1,
+        annotation_text=label,
+        annotation_position="top",
+        annotation_font_size=10,
+        annotation_font_color="gray"
+    )
+
+fig_price.update_layout(
+    xaxis=dict(title="Hour of day", tickmode="linear", tick0=0, dtick=2),
+    yaxis_title="$/MWh",
+    legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    margin=dict(l=0, r=0, t=40, b=0),
+    hovermode="x unified",
+    height=400
+)
+st.plotly_chart(fig_price, use_container_width=True)
+
+st.caption(
+    "Note: Mean > median in peak hours due to extreme price spike events "
+    "(HOEP occasionally exceeds $1,000/MWh during scarcity). "
+    "These events are preserved in the dataset — "
+    "2015 and 2017 each had hours above $1,400/MWh."
+)
+
+st.divider()
+
+
+# ── Assumptions ───────────────────────────────────────────────────────────────
+with st.expander("Data notes and assumptions"):
+    st.markdown("""
+| Parameter | Value | Source |
+|---|---|---|
+| Generation data | Hourly MW by fuel type | IESO `GenOutputbyFuelHourly/` |
+| Price data | Hourly HOEP ($/MWh) | IESO `PriceHOEPPredispOR/` |
+| Coverage | 2015–2024 (HOEP era) | Full years only |
+| Generators included | ≥20 MW nameplate capacity | IESO reporting threshold |
+| Price spikes preserved | Yes — HOEP can be negative or >$1,000/MWh | Real market events |
+
+All generation figures are metered output (MWh per hour), not scheduled or forecast values.
+Negative HOEP values occur during surplus baseload generation events and are included as-is.
+    """)
