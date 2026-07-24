@@ -161,7 +161,6 @@ with k3:
 st.divider()
 
 
-
 col_left, col_right = st.columns(2, border=True)
 # ── Chart 1a — Monthly price with uncertainty band ───────────────────────────
 with col_left:
@@ -173,14 +172,16 @@ with col_left:
         x=monthly["period"], y=monthly["actual_price"],
         name="Actual price (HOEP)",
         line=dict(color=COLORS["actual"], width=2),
-        mode="lines"
+        mode="lines",
+        hovertemplate="Actual: $%{y:.2f}/MWh<extra></extra>"
     ))
     # Counterfactual Price
     fig1.add_trace(go.Scatter(
         x=monthly["period"], y=monthly["cf_price_base"],
         name="No-nuclear price (base $95/MWh gas)",
         line=dict(color=COLORS["counter"], width=1.5, dash="dash"),
-        mode="lines"
+        mode="lines",
+        hovertemplate="No-nuclear: $%{y:.2f}/MWh<extra></extra>"
     ))
     # Uncertainty Band
     fig1.add_trace(go.Scatter(
@@ -224,7 +225,8 @@ with col_right:
             width=6
         ),
         text=(annual["co2_base"] / 1e6).round(1).astype(str) + "M",
-        textposition="outside"
+        textposition="outside",
+        hovertemplate="CO₂ avoided: %{y:.1f}M tonnes<extra></extra>"
     ))
     fig2.update_layout(
         yaxis_title="Million tonnes CO₂",
@@ -242,9 +244,13 @@ cum_col  = "cost_cumulative_real"    if inflation_adj else "cost_cumulative_nomi
 ann_col  = "cost_real"               if inflation_adj else "cost_delta"
 currency = "Real 2024 CAD"           if inflation_adj else "Nominal CAD"
 
-st.subheader(f"Consumer Savings Without Nuclear ({currency})")
-st.caption("Left axis: annual savings · Right axis: cumulative total · "
-    + ("Inflation-adjusted using Bank of Canada CPI." if inflation_adj else "Nominal dollars — toggle inflation adjustment in sidebar for real values.")
+st.subheader(f"Estimated Consumer Cost Avoided by Nuclear Generation ({currency})")
+st.caption(
+    "Annual and cumulative cost premium Ontario consumers would have paid "
+    "in a no-nuclear counterfactual grid. Base scenario: $95/MWh gas marginal cost. "
+    + ("Inflation-adjusted to real 2024 CAD using Bank of Canada CPI."
+       if inflation_adj else
+       "Nominal CAD — toggle inflation adjustment in sidebar for real values.")
 )
 
 
@@ -256,7 +262,8 @@ fig3.add_trace(go.Bar(
     y=annual[ann_col] / 1e9,
     name="Annual savings ($B)",
     marker_color=COLORS["nuclear"],
-    opacity=0.7
+    opacity=0.7,
+    hovertemplate="Annual Savings: $%{y:.1f}B<extra></extra>"
 ), secondary_y=False)
 
 fig3.add_trace(go.Scatter(
@@ -264,7 +271,8 @@ fig3.add_trace(go.Scatter(
     y=annual[cum_col],
     name="Cumulative savings ($B)",
     line=dict(color=COLORS["counter"], width=2.5),
-    mode="lines+markers"
+    mode="lines+markers",
+    hovertemplate="Cumulative Savings: $%{y:.1f}B<extra></extra>"
 ), secondary_y=True)
 
 fig3.update_yaxes(title_text="Annual savings ($B)", secondary_y=False)
