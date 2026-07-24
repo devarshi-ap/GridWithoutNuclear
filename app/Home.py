@@ -263,7 +263,7 @@ fig3.add_trace(go.Bar(
     name="Annual savings ($B)",
     marker_color=COLORS["nuclear"],
     opacity=0.7,
-    hovertemplate="Annual Savings: $%{y:.1f}B<extra></extra>"
+    hovertemplate="Annual: $%{y:.1f}B<extra></extra>"
 ), secondary_y=False)
 
 fig3.add_trace(go.Scatter(
@@ -272,7 +272,7 @@ fig3.add_trace(go.Scatter(
     name="Cumulative savings ($B)",
     line=dict(color=COLORS["counter"], width=2.5),
     mode="lines+markers",
-    hovertemplate="Cumulative Savings: $%{y:.1f}B<extra></extra>"
+    hovertemplate="Cumulative: $%{y:.1f}B<extra></extra>"
 ), secondary_y=True)
 
 fig3.update_yaxes(title_text="Annual savings ($B)", secondary_y=False)

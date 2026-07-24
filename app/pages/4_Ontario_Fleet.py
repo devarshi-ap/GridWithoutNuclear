@@ -49,7 +49,8 @@ for fuel in ["biofuel", "solar", "wind", "gas", "hydro", "nuclear"]:
         name=fuel.capitalize(),
         stackgroup="one",
         line=dict(color=COLORS[fuel], width=0.5),
-        fillcolor=COLORS[fuel]
+        fillcolor=COLORS[fuel],
+        hovertemplate=f"{fuel.capitalize()}: %{{y:,.0f}} MW<extra></extra>"
     ))
 
 for r in REFURBISHMENTS:
@@ -89,7 +90,14 @@ with col_l:
         y=annual["capacity_factor"],
         marker_color=COLORS["nuclear"],
         text=annual["capacity_factor"].astype(str) + "%",
-        textposition="outside"
+        textposition="outside",
+        customdata=annual["nuclear"].round(0).astype(int),
+        hovertemplate=(
+            "<b>%{x}</b><br>"
+            "Capacity factor: %{y:.1f}%<br>"
+            "Avg output: %{customdata:,} MW"
+            "<extra></extra>"
+        )
     ))
     fig2.add_hline(
         y=85, line_dash="dot", line_color="green",
@@ -122,13 +130,26 @@ with col_r:
         fill="toself",
         fillcolor="rgba(33,150,243,0.15)",
         line=dict(color="rgba(255,255,255,0)"),
-        name="10th–90th percentile"
+        name="10th–90th percentile",
+        hoverinfo="skip"
     ))
+    # Average line — show all three values on hover
     fig3.add_trace(go.Scatter(
-        x=months, y=monthly["nuclear"],
+        x=months,
+        y=monthly["nuclear"],
         line=dict(color=COLORS["nuclear"], width=2.5),
-        name="Monthly average",
-        mode="lines+markers"
+        name="Monthly Average",
+        mode="lines+markers",
+        customdata=list(zip(
+            monthly["nuclear_min"].round(0).astype(int),
+            monthly["nuclear_max"].round(0).astype(int)
+        )),
+        hovertemplate=(
+            "Avg: %{y:,.0f} MW<br>"
+            "10th pct: %{customdata[0]:,} MW<br>"
+            "90th pct: %{customdata[1]:,} MW"
+            "<extra></extra>"
+        )
     ))
     fig3.update_layout(
         yaxis_title="Average MW",

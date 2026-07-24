@@ -152,8 +152,9 @@ annual = filtered.groupby("year").agg(
     import_fill=("adj_import_fill", "mean"),
 ).reset_index()
 
-col_left, col_right = st.columns(2)
 
+
+col_left, col_right = st.columns(2)
 # ── Chart 3b: Price Impact with Uncertainty Band ───────────────────────────────────────────────────────────────────
 with col_left:
     st.subheader("Price Impact with Uncertainty Band")
@@ -172,14 +173,16 @@ with col_left:
         x=annual["year"], y=annual["actual_price"],
         name="Actual price",
         line=dict(color=COLORS["actual"], width=2.5),
-        mode="lines+markers"
+        mode="lines+markers",
+        hovertemplate="Actual: $%{y:.2f}/MWh<extra></extra>"
     ))
     # Counterfactual Price
     fig1.add_trace(go.Scatter(
         x=annual["year"], y=annual["cf_price"],
         name="Counterfactual price",
         line=dict(color=COLORS["counter"], width=2.5, dash="dash"),
-        mode="lines+markers"
+        mode="lines+markers",
+        hovertemplate="Counterfactual: $%{y:.2f}/MWh<extra></extra>"
     ))
     fig1.update_layout(
         yaxis_title="$/MWh",
@@ -189,6 +192,7 @@ with col_left:
     )
     st.plotly_chart(fig1, width='stretch')
 
+
 # ── Chart 3c: How the Nuclear Gap Gets Filled ───────────────────────────────────────────────────────────────────
 with col_right:
     st.subheader("How the Nuclear Gap Gets Filled")
@@ -196,17 +200,20 @@ with col_right:
     # Hydro Fill (Stacked Bars)
     fig2.add_trace(go.Bar(
         x=annual["year"], y=annual["hydro_fill"],
-        name="Hydro fill", marker_color=COLORS["hydro"]
+        name="Hydro fill", marker_color=COLORS["hydro"],
+        hovertemplate="Hydro fill: %{y:,.0f} MW<extra></extra>"
     ))
     # Gas Fill (Stacked Bars)
     fig2.add_trace(go.Bar(
         x=annual["year"], y=annual["gas_fill"],
-        name="Gas fill", marker_color=COLORS["gas"]
+        name="Gas fill", marker_color=COLORS["gas"],
+        hovertemplate="Gas fill: %{y:,.0f} MW<extra></extra>"
     ))
     # Import Fill (Stacked Bars)
     fig2.add_trace(go.Bar(
         x=annual["year"], y=annual["import_fill"],
-        name="Import fill", marker_color="#9C27B0"
+        name="Import fill", marker_color="#9C27B0",
+        hovertemplate="Import fill: %{y:,.0f} MW<extra></extra>"
     ))
     fig2.update_layout(
         barmode="stack",
