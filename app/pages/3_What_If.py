@@ -2,28 +2,40 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="What If?", page_icon="🔬", layout="wide")
+st.set_page_config(page_title="What If?", page_icon="🔬", layout="wide", initial_sidebar_state="expanded")
 
 COLORS = {
-    'nuclear': '#2196F3', 'gas': '#FF9800',
-    'hydro': '#4CAF50', 'actual': '#2196F3', 'counter': '#FF5722'
+    'nuclear':  '#2196F3',
+    'gas':      '#FF9800',
+    'hydro':    '#4CAF50',
+    'actual':   '#2196F3',
+    'counter':  '#FF5722',
 }
-
-@st.cache_data
-def load_data():
-    df = pd.read_parquet("data/fact_counterfactual.parquet")
-    df["datetime"] = pd.to_datetime(df["datetime"])
-    df["year"] = df["datetime"].dt.year
-    df["month"] = df["datetime"].dt.month
-    return df[df["year"].between(2015, 2024)]
 
 df = load_data()
 
+
+# ── Sidebar ──────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.title("⚛️ Grid Without Nuclear")
+    st.markdown(
+        "Quantifying nuclear power's economic and "
+        "environmental value to Ontario's electricity "
+        "grid (2015-2025)"
+    )
+    st.divider()
+    st.markdown("**Data:** [IESO Public Reports](https://www.ieso.ca/power-data)")
+    st.markdown("[![GitHub](https://img.shields.io/badge/GitHub-%23121011.svg?logo=github&logoColor=white)](https://github.com/devarshi-ap/GridWithoutNuclear)")
+    st.divider()
+
+
+# ── Header ───────────────────────────────────────────────────────────────────
 st.title("What If?")
 st.markdown("Adjust the scenario parameters and watch the impact update in real time.")
 st.divider()
 
-# Sliders
+
+# ── 3a: Sliders ───────────────────────────────────────────────────────────────────
 col1, col2, col3 = st.columns(3)
 with col1:
     nuclear_reduction = st.slider(
@@ -37,12 +49,18 @@ with col2:
         min_value=70, max_value=120, value=95, step=5,
         help="Published range for Ontario gas peakers."
     )
+    st.caption(
+        "Range $70-$120/MWh reflects historical Ontario gas generation costs "
+        "2015-2024 (NRCan Natural Gas Commodity Survey, IESO Fuel Cost Reports). "
+        "$95/MWh is the 10-year average."
+    )
 with col3:
     year_range = st.select_slider(
         "Year range",
         options=list(range(2015, 2025)),
         value=(2015, 2024)
     )
+
 
 # Filter and recalculate
 filtered = df[df["year"].between(year_range[0], year_range[1])].copy()
@@ -66,8 +84,12 @@ filtered["adj_co2"] = (
 
 st.divider()
 
-# Dynamic KPIs
+
+# ── Dynamic KPIs ───────────────────────────────────────────────────────────────────
+
 k1, k2, k3, k4 = st.columns(4)
+
+# Counterfactual Price
 with k1:
     avg_cf = filtered["adj_cf_price"].mean()
     avg_actual = filtered["actual_price"].mean()
@@ -77,6 +99,8 @@ with k1:
         delta=f"+${avg_cf - avg_actual:.2f} vs actual",
         delta_color="inverse"
     )
+
+# Extra Cost Per Year
 with k2:
     annual_cost = filtered["adj_cost_delta"].sum() / len(filtered["year"].unique()) / 1e9
     st.metric(
@@ -84,6 +108,8 @@ with k2:
         f"${annual_cost:.2f}B",
         delta_color="inverse"
     )
+
+# Extra CO2 Per Year
 with k3:
     annual_co2 = filtered["adj_co2"].sum() / len(filtered["year"].unique())
     st.metric(
@@ -91,6 +117,8 @@ with k3:
         f"+{annual_co2:.1f}M tonnes",
         delta_color="inverse"
     )
+
+# Avg Gas Fill Required
 with k4:
     avg_gas_fill = filtered["adj_gas_fill"].mean()
     st.metric(
@@ -100,7 +128,8 @@ with k4:
 
 st.divider()
 
-# Annual charts
+
+# ── Annual Charts ───────────────────────────────────────────────────────────────────
 annual = filtered.groupby("year").agg(
     actual_price=("actual_price", "mean"),
     cf_price=("adj_cf_price", "mean"),
@@ -119,50 +148,58 @@ annual = filtered.groupby("year").agg(
     import_fill=("adj_import_fill", "mean"),
 ).reset_index()
 
-col_l, col_r = st.columns(2)
+col_left, col_right = st.columns(2)
 
-with col_l:
+# ── Chart 3b: Price Impact with Uncertainty Band ───────────────────────────────────────────────────────────────────
+with col_left:
     st.subheader("Price Impact with Uncertainty Band")
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
+    fig1 = go.Figure()
+    # Uncertainty band
+    fig1.add_trace(go.Scatter(
         x=annual["year"].tolist() + annual["year"].tolist()[::-1],
         y=annual["cf_price_high"].tolist() + annual["cf_price_low"].tolist()[::-1],
         fill="toself",
         fillcolor="rgba(255,87,34,0.15)",
         line=dict(color="rgba(255,255,255,0)"),
-        name="Uncertainty band ($70–$120/MWh gas)"
+        name="Uncertainty band ($70-$120/MWh gas)"
     ))
-    fig.add_trace(go.Scatter(
+    # Actual Price
+    fig1.add_trace(go.Scatter(
         x=annual["year"], y=annual["actual_price"],
         name="Actual price",
         line=dict(color=COLORS["actual"], width=2.5),
         mode="lines+markers"
     ))
-    fig.add_trace(go.Scatter(
+    # Counterfactual Price
+    fig1.add_trace(go.Scatter(
         x=annual["year"], y=annual["cf_price"],
         name="Counterfactual price",
         line=dict(color=COLORS["counter"], width=2.5, dash="dash"),
         mode="lines+markers"
     ))
-    fig.update_layout(
+    fig1.update_layout(
         yaxis_title="$/MWh",
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         margin=dict(l=0, r=0, t=30, b=0),
         hovermode="x unified"
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig1, use_container_width=True)
 
-with col_r:
+# ── Chart 3c: How the Nuclear Gap Gets Filled ───────────────────────────────────────────────────────────────────
+with col_right:
     st.subheader("How the Nuclear Gap Gets Filled")
     fig2 = go.Figure()
+    # Hydro Fill (Stacked Bars)
     fig2.add_trace(go.Bar(
         x=annual["year"], y=annual["hydro_fill"],
         name="Hydro fill", marker_color=COLORS["hydro"]
     ))
+    # Gas Fill (Stacked Bars)
     fig2.add_trace(go.Bar(
         x=annual["year"], y=annual["gas_fill"],
         name="Gas fill", marker_color=COLORS["gas"]
     ))
+    # Import Fill (Stacked Bars)
     fig2.add_trace(go.Bar(
         x=annual["year"], y=annual["import_fill"],
         name="Import fill", marker_color="#9C27B0"
@@ -182,5 +219,5 @@ st.info(
     "Darlington refurbishment windows where nuclear output dropped by "
     "documented amounts. Predicted price increases tracked with actual "
     "HOEP data during those windows, confirming the model's accuracy. "
-    "Uncertainty bands reflect gas marginal cost ranging from $70–$120/MWh."
+    "Uncertainty bands reflect gas marginal cost ranging from $70-$120/MWh."
 )

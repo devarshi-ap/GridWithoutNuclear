@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from data_loader import load_data
 
 # Configure layout and header
 st.set_page_config(page_title="Inside the Grid", layout="wide", page_icon="⚡️", initial_sidebar_state="expanded")
@@ -17,14 +18,6 @@ MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov"
 
 FUEL_ORDER = ["nuclear", "hydro", "wind", "solar", "biofuel", "gas"]
 
-@st.cache_data # cache the data
-def load_data():
-    df = pd.read_parquet("data/fact_counterfactual.parquet")
-    df["datetime"] = pd.to_datetime(df["datetime"])
-    df["year"] = df["datetime"].dt.year
-    df["month"] = df["datetime"].dt.month
-    df["hour"] = df["datetime"].dt.hour
-    return df[df["year"].between(2015, 2024)]
 
 # compute the heatmap data
 @st.cache_data

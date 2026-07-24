@@ -14,6 +14,7 @@ import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
+from data_loader import load_data
 
 # Configure layout and header
 st.set_page_config(page_title="Grid Without Nuclear", layout="wide", page_icon="⚛️", initial_sidebar_state="expanded")
@@ -47,16 +48,6 @@ CO2_NUCLEAR   = 0.012
 CO2_GAS_BASE  = 0.490
 CO2_GAS_LOW   = 0.410
 CO2_GAS_HIGH  = 0.650
-
-
-@st.cache_data # cache the data
-def load_data():
-    df = pd.read_parquet("data/fact_counterfactual.parquet")
-    df["datetime"] = pd.to_datetime(df["datetime"])
-    df["year"] = df["datetime"].dt.year
-    df["month"] = df["datetime"].dt.month
-    df["hour"] = df["datetime"].dt.hour
-    return df[df["year"].between(2015, 2024)] # filter rows where Year is between 2015-2025
 
 
 @st.cache_data

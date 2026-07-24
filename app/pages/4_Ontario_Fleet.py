@@ -1,12 +1,17 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from data_loader import load_data
 
 st.set_page_config(page_title="Ontario's Nuclear Fleet", page_icon="🏭", layout="wide")
 
 COLORS = {
-    'nuclear': '#2196F3', 'gas': '#FF9800', 'hydro': '#4CAF50',
-    'wind': '#00BCD4', 'solar': '#FFEB3B', 'biofuel': '#795548',
+    'nuclear': '#2196F3',
+    'gas': '#FF9800',
+    'hydro': '#4CAF50',
+    'wind': '#00BCD4',
+    'solar': '#FFEB3B',
+    'biofuel': '#795548',
 }
 NUCLEAR_NAMEPLATE_MW = 13500
 
@@ -16,14 +21,6 @@ REFURBISHMENTS = [
     {"unit": "Darlington Unit 1", "start": 2022, "end": 2025},
     {"unit": "Darlington Unit 4", "start": 2024, "end": 2026},
 ]
-
-@st.cache_data
-def load_data():
-    df = pd.read_parquet("data/fact_counterfactual.parquet")
-    df["datetime"] = pd.to_datetime(df["datetime"])
-    df["year"] = df["datetime"].dt.year
-    df["month"] = df["datetime"].dt.month
-    return df[df["year"].between(2015, 2024)]
 
 df = load_data()
 
