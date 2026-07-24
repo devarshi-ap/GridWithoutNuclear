@@ -7,6 +7,9 @@ init:
 up:
 	docker compose up -d
 
+dev:
+	source venv/bin/activate && streamlit run app/Home.py
+
 down:
 	docker compose down
 
