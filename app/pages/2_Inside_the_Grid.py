@@ -114,13 +114,46 @@ z_col, colorscale, title = HEATMAP_CONFIGS.get(metric, ("nuclear_share", "Blues"
 
 pivot = heatmap_data.pivot(index="month", columns="hour", values=z_col)
 
+# Find min and max positions in the pivot, and format
+flat_values = pivot.values.flatten()
+max_idx = flat_values.argmax()
+min_idx = flat_values.argmin()
+max_row, max_col = divmod(max_idx, pivot.shape[1])
+min_row, min_col = divmod(min_idx, pivot.shape[1])
+unit = "%" if "share" in metric.lower() else "$/MWh"
+fmt  = ".1f" if "share" in metric.lower() else ".2f"
+
 fig = go.Figure(go.Heatmap(
     z=pivot.values,
     x=[f"{h:02d}:00" for h in range(24)],
     y=MONTH_NAMES,
     colorscale=colorscale,
-    colorbar=dict(title=title)
+    colorbar=dict(title=title),
+    hovertemplate=(
+        "<b>%{y} · %{x}</b><br>"
+        + (
+            "Nuclear share: %{z:.1f}%"   if metric == "Nuclear share (%)" else
+            "Gas share: %{z:.1f}%"        if metric == "Gas share (%)"    else
+            "Avg price: $%{z:.2f}/MWh"
+        )
+        + "<extra></extra>"
+    )
 ))
+
+fig.add_annotation(
+    x=max_col, y=max_row,
+    text=f"{pivot.values[max_row, max_col]:{fmt}}{unit}",
+    showarrow=False,
+    font=dict(color="white", size=11, family="monospace")
+)
+
+fig.add_annotation(
+    x=min_col, y=min_row,
+    text=f"{pivot.values[min_row, min_col]:{fmt}}{unit}",
+    showarrow=False,
+    font=dict(color="black", size=11, family="monospace")
+)
+
 fig.update_layout(
     xaxis_title="Hour of day",
     yaxis_title="Month",
