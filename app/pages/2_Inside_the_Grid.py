@@ -180,7 +180,7 @@ with tab_hour:
         hovermode="x unified",
         height=380
     )
-    st.plotly_chart(fig_hour, use_container_width=True)
+    st.plotly_chart(fig_hour, width='stretch')
 
 with tab_month:
     st.caption(
@@ -207,7 +207,7 @@ with tab_month:
         hovermode="x unified",
         height=380
     )
-    st.plotly_chart(fig_month, use_container_width=True)
+    st.plotly_chart(fig_month, width='stretch')
 
 st.divider()
 
@@ -288,7 +288,7 @@ fig_price.update_layout(
     hovermode="x unified",
     height=400
 )
-st.plotly_chart(fig_price, use_container_width=True)
+st.plotly_chart(fig_price, width='stretch')
 
 st.caption(
     "Note: Mean > median in peak hours due to extreme price spike events "

@@ -8,4 +8,4 @@ def load_data():
     df["year"]  = df["datetime"].dt.year
     df["month"] = df["datetime"].dt.month
     df["hour"]  = df["datetime"].dt.hour
-    return df#[df["year"].between(2015, 2024)]
+    return df[df["year"].between(2015, 2024)]

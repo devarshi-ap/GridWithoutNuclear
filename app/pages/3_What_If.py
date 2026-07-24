@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from data_loader import load_data
 
 st.set_page_config(page_title="What If?", page_icon="🔬", layout="wide", initial_sidebar_state="expanded")
 
@@ -77,10 +78,9 @@ filtered["adj_price_delta"] = (
 
 filtered["adj_cf_price"] = filtered["actual_price"] + filtered["adj_price_delta"]
 filtered["adj_cost_delta"] = filtered["adj_price_delta"] * filtered["ontario_demand_mw"]
-filtered["adj_co2"] = (
-    (filtered["adj_gas_fill"] * 1000 * 0.490)
-    - (filtered["nuclear_mw"] * reduction_factor * 1000 * 0.012)
-) / 1_000_000
+filtered["adj_co2_tonnes"] = (
+    ((filtered["adj_gas_fill"] * 1000 * 0.490) - (filtered["nuclear_mw"] * reduction_factor * 1000 * 0.012)) / 1e9
+)
 
 st.divider()
 
@@ -111,7 +111,11 @@ with k2:
 
 # Extra CO2 Per Year
 with k3:
-    annual_co2 = filtered["adj_co2"].sum() / len(filtered["year"].unique())
+    annual_co2 = (filtered["adj_co2_tonnes"].sum() / max(len(filtered["year"].unique()), 1))
+    # debugging purposes
+    #st.write(f"DEBUG: adj_co2_tonnes sum = {filtered['adj_co2_tonnes'].sum():,.0f}")
+    #st.write(f"DEBUG: unique years = {len(filtered['year'].unique())}")
+    #st.write(f"DEBUG: annual_co2 before display = {annual_co2:,.1f}")
     st.metric(
         "Extra CO₂ Per Year",
         f"+{annual_co2:.1f}M tonnes",
@@ -183,7 +187,7 @@ with col_left:
         margin=dict(l=0, r=0, t=30, b=0),
         hovermode="x unified"
     )
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width='stretch')
 
 # ── Chart 3c: How the Nuclear Gap Gets Filled ───────────────────────────────────────────────────────────────────
 with col_right:
@@ -210,7 +214,7 @@ with col_right:
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         margin=dict(l=0, r=0, t=30, b=0)
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width='stretch')
 
 # Validation callout
 st.divider()

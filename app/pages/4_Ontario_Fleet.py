@@ -70,7 +70,7 @@ fig.update_layout(
     hovermode="x unified",
     height=400
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
 st.divider()
 
@@ -102,7 +102,7 @@ with col_l:
         margin=dict(l=0, r=0, t=30, b=0),
         showlegend=False
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width='stretch')
 
 with col_r:
     st.subheader("Seasonal Nuclear Output Pattern")
@@ -136,7 +136,7 @@ with col_r:
         margin=dict(l=0, r=0, t=30, b=0),
         hovermode="x unified"
     )
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3, width='stretch')
 
 # Refurbishment timeline
 st.divider()
@@ -163,4 +163,4 @@ fig4.update_layout(
     margin=dict(l=0, r=0, t=30, b=0),
     height=220
 )
-st.plotly_chart(fig4, use_container_width=True)
+st.plotly_chart(fig4, width='stretch')
